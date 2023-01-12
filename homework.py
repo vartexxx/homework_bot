@@ -8,7 +8,12 @@ from http import HTTPStatus
 from dotenv import load_dotenv
 from logging.handlers import RotatingFileHandler
 
-from exceptions import *
+from exceptions import (
+    SendMessageError,
+    HomeworkEndpointError,
+    ResponseError,
+    MissingTokensError
+)
 
 load_dotenv()
 
@@ -50,14 +55,16 @@ def check_tokens():
     """Функция проверяет наличие перменных окружения."""
     logger.info('Проверка наличия переменных окружения')
     if([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID].count(None) == 0):
-        return True    
+        return True
 
 
 def send_message(bot, message):
     """Функция отправляет сообщениие через бота в чат."""
     try:
         bot.send_message(TELEGRAM_CHAT_ID, message)
-        logger.debug(f'Сообщение отправлено в чат {TELEGRAM_CHAT_ID}: {message}')
+        logger.debug(
+            f'Сообщение отправлено в чат {TELEGRAM_CHAT_ID}: {message}'
+        )
     except Exception:
         logger.error('Ошибка отправки сообщения')
         raise SendMessageError('Ошибка отправки сообщения')
@@ -111,7 +118,9 @@ def main():
     """Основная логика работы бота."""
     if not check_tokens():
         logger.critical('Отсутствуют необходимые пременные окружения')
-        raise MissingTokensError('Отсутствуют необходимые переменные окружения')
+        raise MissingTokensError(
+            'Отсутствуют необходимые переменные окружения'
+        )
     timestamp = int(time.time())
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     last_message = ''
