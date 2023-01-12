@@ -59,7 +59,9 @@ def check_tokens() -> None:
     for value in GLOBAL_VARIABLES:
         if globals()[value] is None:
             logger.critical(f'Пременная окружения: {value} отсутствует.')
-            raise MissingTokensError(f'Пременная окружения: {value} отсутствует.')
+            raise MissingTokensError(
+                f'Пременная окружения: {value} отсутствует.'
+            )
 
 
 def send_message(bot: telegram.Bot, message: str) -> None:
@@ -99,8 +101,8 @@ def check_response(response: dict) -> list:
         logger.error(f'Ответ запроса - не словарь. {type(response)}')
         raise TypeError(f'Ответ запроса - не словарь. {type(response)}')
     if 'homeworks' not in response:
-        logger.error(f'Ошибка доступа по ключу \'homeworks\':')
-        raise KeyError('Ошибка доступа по ключу \'homeworks\'')
+        logger.error('Ошибка доступа по ключу \'homeworks\':')
+        raise KeyError('Ошибка доступа по ключу \'homeworks\'Ж')
     homework_list = response['homeworks']
     if not isinstance(homework_list, list):
         logger.error(
