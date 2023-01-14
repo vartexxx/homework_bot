@@ -22,7 +22,7 @@ load_dotenv()
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-GLOBAL_VARIABLES = ('PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID')
+GLOBAL_VARIABLES = ['PRACTICUM_TOKEN', 'TELEGRAM_TOKEN', 'TELEGRAM_CHAT_ID']
 RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
@@ -56,12 +56,15 @@ handler.setFormatter(formatter)
 def check_tokens() -> None:
     """Функция проверяет наличие перменных окружения."""
     logger.info('Проверка наличия переменных окружения')
+    undefined_list = []
     for value in GLOBAL_VARIABLES:
         if globals()[value] is None:
-            logger.critical(f'Пременная окружения: {value} отсутствует.')
-            raise MissingTokensError(
-                f'Пременная окружения: {value} отсутствует.'
-            )
+            undefined_list.append(value)
+    logger.critical(f'Нехватает следующих переменных окружения: {undefined_list}.')
+    if undefined_list:
+        raise MissingTokensError(
+            f'Нехватает следующих переменных окружения: {undefined_list}.'
+        )
 
 
 def send_message(bot: telegram.Bot, message: str) -> None:
@@ -88,7 +91,6 @@ def get_api_answer(timestamp: int) -> dict:
             params=playload
         )
     except RequestException as error:
-        logger.error(f'Ошибка при запросе API: {error}')
         raise HomeworkEndpointError(f'Ошибка при запросе API: {error}')
     if homework_status.status_code != HTTPStatus.OK:
         raise ResponseError('API вернул статус отличный от 200')
@@ -98,15 +100,17 @@ def get_api_answer(timestamp: int) -> dict:
 def check_response(response: dict) -> list:
     """Проверка ответа запроса от API."""
     if not isinstance(response, dict):
-        logger.error(f'Ответ запроса - не словарь. {type(response)}')
+        type_response = type(response)
+        logger.error(f'Ответ запроса - не словарь. {type_response}')
         raise TypeError(f'Ответ запроса - не словарь. {type(response)}')
     if 'homeworks' not in response:
         logger.error('Ошибка доступа по ключу \'homeworks\':')
         raise KeyError('Ошибка доступа по ключу \'homeworks\'Ж')
     homework_list = response['homeworks']
     if not isinstance(homework_list, list):
+        type_homework_list = type(homework_list)
         logger.error(
-            f'Homeworks представлены не в виде списка: {type(homework_list)}'
+            f'Homeworks представлены не в виде списка: {type_homework_list}'
         )
         raise TypeError('Homeworks представлены не в виде списка')
     return homework_list
@@ -150,7 +154,7 @@ def main():
             else:
                 logger.info(message)
         except Exception as error:
-            logger.error(f'Сбой в работе программы: {error}')
+            logging.exception(f'Сбой в работе программы: {error}')
             send_message(bot, f'Сбой в работе программы: {error}')
         finally:
             time.sleep(RETRY_PERIOD)
