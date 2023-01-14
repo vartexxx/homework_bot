@@ -60,8 +60,10 @@ def check_tokens() -> None:
     for value in GLOBAL_VARIABLES:
         if globals()[value] is None:
             undefined_list.append(value)
-    logger.critical(f'Нехватает следующих переменных окружения: {undefined_list}.')
     if undefined_list:
+        logger.critical(
+            f'Нехватает следующих переменных окружения: {undefined_list}.'
+        )
         raise MissingTokensError(
             f'Нехватает следующих переменных окружения: {undefined_list}.'
         )
